@@ -1,24 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { config } from './orm.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DatabaseModule } from './database.module';
-import { ProductsModule } from './products/products.module';
 import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    // ProductsModule,
-    ConfigModule.forRoot({isGlobal: true}),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      autoLoadEntities: true,
-      synchronize: true
-    }),
+    TypeOrmModule.forRoot(config),
     UserModule,
-    DatabaseModule
   ],
   controllers: [AppController],
   providers: [AppService],
