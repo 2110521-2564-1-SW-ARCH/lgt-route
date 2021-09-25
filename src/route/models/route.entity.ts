@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryColumn} from "typeorm";
 export class RouteEntity {
     @PrimaryColumn()
     station: string;
-    @Column()
+    @PrimaryColumn()
     number: number;
     @Column()
     order: number;
