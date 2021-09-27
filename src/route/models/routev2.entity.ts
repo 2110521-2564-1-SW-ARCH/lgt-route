@@ -1,19 +1,16 @@
 import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class RouteEntity {
+export class RouteV2Entity {
 
-    @PrimaryColumn()
-    route_id: number;
-
-    @PrimaryColumn()
-    location_id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
     @Column({ length: 100, nullable: false })
-    location: string;
+    source: string;
 
-    @Column({ nullable: false})
-    order: number;
+    @Column({ length: 100, nullable: false })
+    destination: string;
 
     @Column({ nullable: true })
     time_from_last: number;
