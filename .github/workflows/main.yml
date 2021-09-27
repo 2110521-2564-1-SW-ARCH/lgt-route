@@ -26,7 +26,7 @@ jobs:
           username: ${{secrets.SSH_USERNAME}}
           
           script: |
-            cd lgt-location
+            cd lgt-route
             git checkout main
             git pull
             docker-compose up -d --build prod
