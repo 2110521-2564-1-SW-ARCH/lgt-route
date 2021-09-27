@@ -2,15 +2,15 @@ version: '3.8'
 
 services:
   dev:
-      container_name: nestjs_api_dev
+      container_name: lgt_route_api_dev
       image: nestjs-api-dev:1.0.0
       build:
           context: .
-          target: development
+          target: production
           dockerfile: DOCKERFILE
       command: npm run start:debug
       ports:
-          - 8001:8000
+          - 8001:9000
       networks:
           - nesjs-network
       volumes:
@@ -18,7 +18,7 @@ services:
           - /usr/src/app/node_modules
       restart: unless-stopped
   prod:
-      container_name: nestjs_api_prod
+      container_name: lgt_route_api_prod
       image: nestjs-api-prod:1.0.0
       build:
           context: .
@@ -26,7 +26,7 @@ services:
           dockerfile: DOCKERFILE
       command: npm run start:prod
       ports:
-          - 8000:8000
+          - 8000:9000
       networks:
           - nesjs-network
       volumes:
