@@ -1,4 +1,4 @@
-import { HttpCode, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpCode, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import e from "express";
 import { resourceUsage } from "process";
@@ -34,6 +34,7 @@ export class RouteService {
     : Promise<any> {
         const srcLocation = RoutePayloadDto.srcLocation
         const destLocation = RoutePayloadDto.destLocation
+        if (!srcLocation || !destLocation) throw new HttpException('BAD REQUEST', HttpStatus.BAD_REQUEST)
         const response = await this.recursiveRoute(srcLocation, 0, destLocation, 0, [])
             .then(res => {
                 console.log('res', res)
