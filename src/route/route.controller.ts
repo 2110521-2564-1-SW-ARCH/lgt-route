@@ -10,11 +10,11 @@ import { Response } from 'express';
 export class RouteController {
     constructor(private routeService: RouteService){}
 
-    @Post('/get-route')
-    findRoute(@Body() RoutePayloadDto: RoutePayloadDto) {
-        const routeResponse = this.routeService.findRoute(RoutePayloadDto)
-        return routeResponse
-    }
+    // @Post('/get-route')
+    // findRoute(@Body() RoutePayloadDto: RoutePayloadDto) {
+    //     const routeResponse = this.routeService.findRoute(RoutePayloadDto)
+    //     return routeResponse
+    // }
     @Post('/search-route')
     test(@Body() RoutePayloadDto: RoutePayloadDto) {
         const routeResponse = this.routeService.searchRoute(RoutePayloadDto)

@@ -17,4 +17,7 @@ export class RouteV2Entity {
 
     @Column({ length: 30, nullable: false })
     type: string
+
+    @Column({ length: 30, nullable: true })
+    additional_type: string
 }

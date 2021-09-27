@@ -30,92 +30,6 @@ export class RouteService {
         return station
     }
 
-    async findRoute(RoutePayloadDto)
-    : Promise<any> {
-        const srcLocation = RoutePayloadDto.srcLocation
-        const destLocation = RoutePayloadDto.destLocation
-        //some code here
-        const srcRouteId = await this.findStation(srcLocation)
-        const destRouteId = await this.findStation(destLocation)
-        if (!srcRouteId || !destRouteId) {
-            return { 
-                message: "No location data in the system", 
-                status_code: HttpStatus.BAD_REQUEST
-            }
-        }
-        const possibleRoute: number[] = _.intersection(srcRouteId, destRouteId)
-
-        if (possibleRoute.length === 0) {
-            return { 
-                message: "No route found",
-                status_code: HttpStatus.BAD_REQUEST
-            }
-        }
-                
-        const findedRoute = await this.routeRepository.find({
-                    where:{
-                        route_id: In(possibleRoute),
-                    }
-                })
-
-        var mapedRoute = _(findedRoute)
-                .groupBy(x => x.route_id)
-                .map((value, key) => ({
-                  route_id: key,
-                  data: value
-                }))
-                .value();
-        
-        var routeArray = []
-        var allTime = Infinity
-        var resultRouteArray = []
-        console.log('srcLocation', srcLocation, destLocation)
-        mapedRoute.forEach((route) => {
-            // each route
-            var time = 0
-            var isInRange = false
-            routeArray = []
-            _.sortBy(route.data, 'order').forEach((data) => {
-                if (data.location === srcLocation) {
-                    isInRange = true
-                }
-                if (isInRange) {
-                    routeArray.push(data)
-                    time += data.time_from_last
-                }
-                if (data.location === destLocation) {
-                    isInRange = false
-                }
-            })
-            if (time < allTime) {
-                allTime = time
-                resultRouteArray = routeArray
-            }
-        })
-        console.log('return', resultRouteArray)
-        return resultRouteArray
-        
-        // var bus_no = await this.routeRepository.findOne({station:src_station}).then(result => result.number)
-        
-        // if (dest_ord<src_ord){
-        //     return getRepository(RouteEntity).createQueryBuilder("route")
-        //     .select(["route.station","route.number","route.time_from_last"])
-        //     .where("route.number = :bus_no",{bus_no:bus_no})
-        //     .andWhere("route.order <= :dest_ord OR route.order >= :src_ord",{dest_ord:dest_ord,src_ord:src_ord})
-        //     .orderBy(`(CASE WHEN route.order <= ${dest_ord} THEN route.order+11 ELSE route.order END)`)
-        //     .getMany()
-        // }else{
-        //     return this.routeRepository.find({
-        //         select:['station','number','time_from_last'],
-        //         where:{
-        //             number: bus_no,
-        //             order: Between(src_ord, dest_ord)
-        //         }
-        //     })
-        // }
-        
-    }
-
     async searchRoute(RoutePayloadDto)
     : Promise<any> {
         const srcLocation = RoutePayloadDto.srcLocation
@@ -139,6 +53,7 @@ export class RouteService {
             destination: string,
             time_from_last: number
             type: string,
+            additional_type: string
         }[]): Promise<any> {
         if (source === destination) {
             return { time: time, route: route }
