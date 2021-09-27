@@ -6,25 +6,8 @@ services:
       image: nestjs-api-dev:1.0.0
       build:
           context: .
-          target: production
           dockerfile: DOCKERFILE
       command: npm run start:debug
-      ports:
-          - 8001:9000
-      networks:
-          - nesjs-network
-      volumes:
-          - .:/usr/src/app
-          - /usr/src/app/node_modules
-      restart: unless-stopped
-  prod:
-      container_name: lgt_route_api_prod
-      image: nestjs-api-prod:1.0.0
-      build:
-          context: .
-          target: production
-          dockerfile: DOCKERFILE
-      command: npm run start:prod
       ports:
           - 8000:9000
       networks:
