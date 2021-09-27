@@ -29,5 +29,5 @@ jobs:
             cd lgt-route
             git checkout main
             git pull
-            docker-compose up --build --force-recreate 
+            docker-compose up --build -d --force-recreate 
             echo 'Deployment prod complete test'
