@@ -1,4 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm'
+
 require('dotenv').config();
 
 class ConfigService {
@@ -34,17 +35,14 @@ class ConfigService {
       cli: {
         migrationsDir: 'src/migrations',
       },
-      synchronize: true,
-      extra: {
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      },
-    };
+      synchronize: this.getValue('MODE') != 'production',    };
   }
 }
-
-
+// extra: {
+//   ssl: {
+//     rejectUnauthorized: false,
+//   },
+// },
 
 
 const configService = new ConfigService(process.env)

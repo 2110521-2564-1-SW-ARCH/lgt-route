@@ -1,159 +1,41 @@
-import { HttpCode, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import e from "express";
-import { resourceUsage } from "process";
-import { from, Observable } from "rxjs";
-import { Between, getRepository, In, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
-import { LocationEntity } from "./models/location.entity";
-import { RouteV2Entity } from "./models/routev2.entity";
-import { LocationI } from "./models/location.interface";
-import { RouteEntity } from "./models/route.entity";
-import { RouteI } from "./models/route.interface";
+import { Repository } from "typeorm";
+import { Route } from "./models/route.entity";
+import { IRoute, IResponse } from "./interfaces/route.interface";
+import { EntityNotFoundError } from "typeorm";
 
 var _ = require('lodash');
 
 @Injectable()
 export class RouteService {
     constructor(
-        @InjectRepository(RouteEntity)
-        private routeRepository: Repository<RouteEntity>,
-        @InjectRepository(LocationEntity)
-        private locationRepository: Repository<LocationEntity>,
-        @InjectRepository(RouteV2Entity)
-        private routeV2Repository: Repository<RouteV2Entity>
+        @InjectRepository(Route)
+        private routeRepository: Repository<Route>
     ){}
 
-    async findStation(location: string): Promise<number[]> {
-        const station = await this.locationRepository
-            .findOne({location: location})
-            .then(result => result?.route_id);
-        return station
-    }
-
-    async findRoute(RoutePayloadDto)
-    : Promise<any> {
-        const srcLocation = RoutePayloadDto.srcLocation
-        const destLocation = RoutePayloadDto.destLocation
-        //some code here
-        const srcRouteId = await this.findStation(srcLocation)
-        const destRouteId = await this.findStation(destLocation)
-        if (!srcRouteId || !destRouteId) {
-            return { 
-                message: "No location data in the system", 
-                status_code: HttpStatus.BAD_REQUEST
-            }
-        }
-        const possibleRoute: number[] = _.intersection(srcRouteId, destRouteId)
-
-        if (possibleRoute.length === 0) {
-            return { 
-                message: "No route found",
-                status_code: HttpStatus.BAD_REQUEST
-            }
-        }
-                
-        const findedRoute = await this.routeRepository.find({
-                    where:{
-                        route_id: In(possibleRoute),
-                    }
-                })
-
-        var mapedRoute = _(findedRoute)
-                .groupBy(x => x.route_id)
-                .map((value, key) => ({
-                  route_id: key,
-                  data: value
-                }))
-                .value();
-        
-        var routeArray = []
-        var allTime = Infinity
-        var resultRouteArray = []
-        console.log('srcLocation', srcLocation, destLocation)
-        mapedRoute.forEach((route) => {
-            // each route
-            var time = 0
-            var isInRange = false
-            routeArray = []
-            _.sortBy(route.data, 'order').forEach((data) => {
-                if (data.location === srcLocation) {
-                    isInRange = true
-                }
-                if (isInRange) {
-                    routeArray.push(data)
-                    time += data.time_from_last
-                }
-                if (data.location === destLocation) {
-                    isInRange = false
-                }
-            })
-            if (time < allTime) {
-                allTime = time
-                resultRouteArray = routeArray
-            }
-        })
-        console.log('return', resultRouteArray)
-        return resultRouteArray
-        
-        // var bus_no = await this.routeRepository.findOne({station:src_station}).then(result => result.number)
-        
-        // if (dest_ord<src_ord){
-        //     return getRepository(RouteEntity).createQueryBuilder("route")
-        //     .select(["route.station","route.number","route.time_from_last"])
-        //     .where("route.number = :bus_no",{bus_no:bus_no})
-        //     .andWhere("route.order <= :dest_ord OR route.order >= :src_ord",{dest_ord:dest_ord,src_ord:src_ord})
-        //     .orderBy(`(CASE WHEN route.order <= ${dest_ord} THEN route.order+11 ELSE route.order END)`)
-        //     .getMany()
-        // }else{
-        //     return this.routeRepository.find({
-        //         select:['station','number','time_from_last'],
-        //         where:{
-        //             number: bus_no,
-        //             order: Between(src_ord, dest_ord)
-        //         }
-        //     })
-        // }
-        
-    }
-
-    async searchRoute(RoutePayloadDto)
-    : Promise<any> {
-        const srcLocation = RoutePayloadDto.srcLocation
-        const destLocation = RoutePayloadDto.destLocation
-        const response = await this.recursiveRoute(srcLocation, 0, destLocation, 0, [])
-            .then(res => {
-                console.log('res', res)
-                return res
-            })
-        return response
-    }
-   
     async recursiveRoute(
         source: string,  
         time: number, 
         destination: string,
         depth: number,
-        route: {
-            id: number,
-            source: string,
-            destination: string,
-            time_from_last: number
-            type: string,
-        }[]): Promise<any> {
+        route: IRoute[])
+        : Promise<{time: number, route: IRoute[]}> {
         if (source === destination) {
             return { time: time, route: route }
         } 
+        // TODO: edit this -> if time for going the next stop less than the best time (best route), stop -> return null
         if (depth > 10) return { time: null, route: null }
 
-        const findRoute = await this.routeV2Repository.find({ source: source })
+        const findRoute = await this.routeRepository.find({ source: source })
         if (findRoute.length === 0) return { time: null, route: null }
 
         var bestRouteTime = Infinity
-        var bestRoute = []
+        var bestRoute: {time: number, route: IRoute[]} = {time: Infinity, route: []}
         for (const possibleRoute of findRoute) {
             var thisRoute = await this.recursiveRoute(
                 possibleRoute.destination, 
-                possibleRoute.time_from_last + time, 
+                possibleRoute.time + time, 
                 destination, 
                 depth+1, 
                 [...route, possibleRoute]
@@ -168,5 +50,64 @@ export class RouteService {
             else continue
         }
         return bestRoute
+    }
+
+    async searchRouteService(RoutePayloadDto)
+    : Promise<{time: number, route: IRoute[]}> {
+        const srcLocation = RoutePayloadDto.srcLocation
+        const destLocation = RoutePayloadDto.destLocation
+        const response = await this.recursiveRoute(srcLocation, 0, destLocation, 0, [])
+            .then(res => {return res })
+        return response
+    }
+
+    async createOrUpdateRouteService(RoutePayload: IRoute): Promise<IResponse> {
+        // update: update time from source location to destination location
+        try {
+            const routeFound = await this.routeRepository.findOneOrFail({
+                source: RoutePayload.source,
+                destination: RoutePayload.destination,
+                type: RoutePayload.type,
+                additional_type: RoutePayload?.additional_type
+            });
+            await this.routeRepository.save({...RoutePayload, id: routeFound.id})
+            return {
+                id: routeFound.id,
+                message: `Route id: ${routeFound.id} is updated successfully`,
+                code: HttpStatus.OK
+            }
+        } catch (error) {
+            if (error instanceof EntityNotFoundError) {
+                await this.routeRepository.save(RoutePayload)
+                return {
+                    message: `Route from ${RoutePayload.source} to ${RoutePayload.destination} is created successfully`,
+                    code: HttpStatus.OK
+                }
+            }
+            else {
+                return {
+                    message: 'Create or Update route is failed',
+                    code: HttpStatus.BAD_REQUEST
+                }
+            }
+        }
+        
+    }
+
+    async deleteRouteService(routeId: number): Promise<IResponse> {
+        const routeFound = await this.routeRepository.findOne({
+            id: routeId
+        });
+        if (routeFound){
+            this.routeRepository.remove(routeFound)
+            return {
+                message: `Route id: ${routeId} is deleted successfully`,
+                code: HttpStatus.OK
+            }
+        }
+        return {
+            message: `Failed to delete route id: ${routeId}`,
+            code: HttpStatus.BAD_REQUEST
+        }
     }
 }
