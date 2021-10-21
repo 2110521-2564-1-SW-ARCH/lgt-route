@@ -26,6 +26,7 @@ jobs:
           username: ${{secrets.SSH_USERNAME}}
           script: |
             cd lgt-route
+            rm -R -f dist
             git checkout main
             git pull https://${{secrets.USERNAME_GIT}}:${{secrets.PASS_GIT}}@github.com/2110521-2564-1-SW-ARCH/lgt-route.git
             docker-compose up --build -d --force-recreate 
