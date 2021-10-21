@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class RoutePayloadDto {
+export class GetRoutePayloadDto {
     @IsString()
     @IsNotEmpty()
     srcLocation: string

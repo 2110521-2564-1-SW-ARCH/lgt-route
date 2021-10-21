@@ -1,23 +1,35 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { 
+    Column, 
+    Entity, 
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    UpdateDateColumn
+} from "typeorm";
 
 @Entity()
-export class RouteEntity {
+export class Route {
 
-    @PrimaryColumn()
-    route_id: number;
-
-    @PrimaryColumn()
-    location_id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
     @Column({ length: 100, nullable: false })
-    location: string;
+    source: string;
 
-    @Column({ nullable: false})
-    order: number;
+    @Column({ length: 100, nullable: false })
+    destination: string;
 
     @Column({ nullable: true })
-    time_from_last: number;
+    time: number;
 
     @Column({ length: 30, nullable: false })
     type: string
+
+    @Column({ length: 30, nullable: true })
+    additional_type?: string | null
+
+    @CreateDateColumn()
+    created_at: Date;
+
+    @UpdateDateColumn()
+    updated_at: Date;
 }
