@@ -7,7 +7,7 @@ export class AppController {
 
   @Get()
   @Header('Content-Type', 'text/html')
-  getHello(): {name: string} {
-    return {name: 'Maxy production'};
+  getHello(): {message: string} {
+    return {message: "This is route service"};
   }
 }
