@@ -35,14 +35,16 @@ class ConfigService {
       cli: {
         migrationsDir: 'src/migrations',
       },
-      synchronize: this.getValue('MODE') != 'production',    };
+      synchronize: true,    
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      },
+    };
   }
 }
-// extra: {
-//   ssl: {
-//     rejectUnauthorized: false,
-//   },
-// },
+
 
 
 const configService = new ConfigService(process.env)
