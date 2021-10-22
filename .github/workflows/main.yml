@@ -24,15 +24,29 @@ jobs:
           token: ${{secrets.PASS_GIT}}
       - name : Deploy nest js
         uses : appleboy/ssh-action@v0.1.2
+        env:
+            POSTGRES_HOST: ${{secrets.POSTGRES_HOST}}
+            POSTGRES_PORT: ${{secrets.POSTGRES_PORT}}
+            POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+            POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+            POSTGRES_DATABASE: ${{secrets.POSTGRES_DATABASE}}
         with:
           host: ${{secrets.SSH_HOST}}
           key: ${{secrets.SSH_KEY}}
           username: ${{secrets.SSH_USERNAME}}
+          envs: POSTGRES_HOST,POSTGRES_PORT,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DATABASE
           script: |
             rm -R -f lgt-route
             git clone https://${{secrets.USERNAME_GIT}}:${{secrets.PASS_GIT}}@github.com/2110521-2564-1-SW-ARCH/lgt-route.git
             cd lgt-route
             docker-compose down -v
+            touch .env
+            echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env
+            echo "POSTGRES_PORT=$POSTGRES_PORT" >> .env
+            echo "POSTGRES_USER=$POSTGRES_USER" >> .env
+            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
+            echo "POSTGRES_DATABASE=$POSTGRES_DATABASE" >> .env
             docker-compose build
-            docker-compose up  
+            docker-compose up -d
             echo 'Deployment prod complete'
+          
