@@ -10,6 +10,7 @@ async function bootstrap() {
     .setTitle("Let's go travel: Route Service")
     .setDescription('The Route Service API Description')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   app.useGlobalPipes(new ValidationPipe());

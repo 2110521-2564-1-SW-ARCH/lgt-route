@@ -42,7 +42,6 @@ export class RouteService {
             )
             if (thisRoute.time && thisRoute.route) {
                 if (thisRoute.time < bestRouteTime) {
-                    console.log('found best route')
                     bestRouteTime = thisRoute.time
                     bestRoute = thisRoute
                 }
@@ -64,31 +63,32 @@ export class RouteService {
     async createOrUpdateRouteService(RoutePayload: IRoute): Promise<IResponse> {
         // update: update time from source location to destination location
         try {
-            const routeFound = await this.routeRepository.findOneOrFail({
+            const routeFound = await this.routeRepository.findOne({
                 source: RoutePayload.source,
                 destination: RoutePayload.destination,
                 type: RoutePayload.type,
                 additional_type: RoutePayload?.additional_type
             });
-            await this.routeRepository.save({...RoutePayload, id: routeFound.id})
-            return {
-                id: routeFound.id,
-                message: `Route id: ${routeFound.id} is updated successfully`,
-                code: HttpStatus.OK
-            }
-        } catch (error) {
-            if (error instanceof EntityNotFoundError) {
+            if (routeFound) {
+                await this.routeRepository.save({...RoutePayload, id: routeFound.id})
+                return {
+                    id: routeFound.id,
+                    message: `Route id: ${routeFound.id} is updated successfully`,
+                    code: HttpStatus.OK
+                }
+            } else {
                 await this.routeRepository.save(RoutePayload)
                 return {
                     message: `Route from ${RoutePayload.source} to ${RoutePayload.destination} is created successfully`,
                     code: HttpStatus.OK
                 }
             }
-            else {
-                return {
-                    message: 'Create or Update route is failed',
-                    code: HttpStatus.BAD_REQUEST
-                }
+            
+        } catch (error) {
+            console.log('error', error)
+            return {
+                message: 'Create or Update route is failed',
+                code: HttpStatus.BAD_REQUEST
             }
         }
         
