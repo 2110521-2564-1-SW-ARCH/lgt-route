@@ -4,8 +4,9 @@ import { RouteService } from "./route.service";
 import { GetRoutePayloadDto } from "./dto/get-route.dto";
 import { CreateRoutePayloadDto } from "./dto/create-route.dto";
 import { Response } from 'express';
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @ApiTags('routes')
 @Controller('api/routes')
 export class RouteController {
