@@ -30,4 +30,16 @@ export class RouteController {
     deleteRoute(@Param('id') routeId: number) {
         return this.routeService.deleteRouteService(routeId)
     }
+
+    @HttpCode(HttpStatus.OK)
+    @Get('source')
+    getAllSourceRoute() {
+        return this.routeService.getSourceRoute()
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Get('destination')
+    getAllDestinationRoute() {
+        return this.routeService.getDestinationRoute()
+    }
 }

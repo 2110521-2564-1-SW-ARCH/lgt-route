@@ -110,4 +110,22 @@ export class RouteService {
             code: HttpStatus.BAD_REQUEST
         }
     }
+
+    async getSourceRoute(): Promise<any> {
+        const source = await this.routeRepository.find({select: ['source']})
+        return source
+            .map((item) => (item.source))
+            .filter(function(item, pos, self) {
+                return self.indexOf(item) == pos;
+            })
+    }
+
+    async getDestinationRoute(): Promise<any> {
+        const destination = await this.routeRepository.find({select: ['destination']})
+        return destination
+            .map((item) => (item.source))
+            .filter(function(item, pos, self) {
+                return self.indexOf(item) == pos;
+            })
+    }
 }
