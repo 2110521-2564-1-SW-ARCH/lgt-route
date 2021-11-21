@@ -123,7 +123,7 @@ export class RouteService {
     async getDestinationRoute(): Promise<any> {
         const destination = await this.routeRepository.find({select: ['destination']})
         return destination
-            .map((item) => (item.source))
+            .map((item) => (item.destination))
             .filter(function(item, pos, self) {
                 return self.indexOf(item) == pos;
             })
