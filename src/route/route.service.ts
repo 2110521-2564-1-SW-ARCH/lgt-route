@@ -118,6 +118,9 @@ export class RouteService {
             .filter(function(item, pos, self) {
                 return self.indexOf(item) == pos;
             })
+            .sort((a, b) => (
+                a.localeCompare(b)
+            ))
     }
 
     async getDestinationRoute(): Promise<any> {
@@ -127,5 +130,8 @@ export class RouteService {
             .filter(function(item, pos, self) {
                 return self.indexOf(item) == pos;
             })
+            .sort((a, b) => (
+                a.localeCompare(b)
+            ))
     }
 }
